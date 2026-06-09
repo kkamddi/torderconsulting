@@ -1,4 +1,4 @@
-import { supabaseAnonKey, supabaseUrl } from '../lib/supabaseClient.js';
+import { supabase } from '../lib/supabaseClient.js';
 
 export async function handleLeadSubmit(form) {
   const formData = {
@@ -14,33 +14,28 @@ export async function handleLeadSubmit(form) {
     status: 'new',
   };
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Supabase 환경변수가 설정되지 않았습니다.');
+  if (!supabase) {
+    const error = new Error('Supabase 환경변수가 설정되지 않았습니다.');
+    logSubmitError(error, formData);
+    throw error;
   }
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/leads`, {
-    method: 'POST',
-    headers: {
-      apikey: supabaseAnonKey,
-      Authorization: `Bearer ${supabaseAnonKey}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
-    },
-    body: JSON.stringify(formData),
-  });
+  const { data, error } = await supabase.from('leads').insert(formData).select().single();
 
-  if (!response.ok) {
-    throw new Error(await getSubmitErrorMessage(response));
+  if (error) {
+    logSubmitError(error, formData);
+    throw error;
   }
 
-  return { ok: true, lead: formData };
+  return { ok: true, lead: data || formData };
 }
 
-async function getSubmitErrorMessage(response) {
-  try {
-    const errorBody = await response.json();
-    return errorBody.message || `저장 요청 실패 (${response.status})`;
-  } catch {
-    return `저장 요청 실패 (${response.status})`;
-  }
+function logSubmitError(error, payload) {
+  console.error('상담 신청 저장 실패', {
+    code: error?.code,
+    message: error?.message,
+    details: error?.details,
+    hint: error?.hint,
+    payload,
+  });
 }

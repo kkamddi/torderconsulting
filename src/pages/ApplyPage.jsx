@@ -77,9 +77,7 @@ export default function ApplyPage() {
     try {
       await handleLeadSubmit(form);
     } catch (error) {
-      console.error('상담 신청 저장 실패', error);
-      const detail = error?.message ? ` (${error.message})` : '';
-      setSubmitError(`신청 저장 중 문제가 생겼습니다.${detail}`);
+      setSubmitError('신청 저장 중 문제가 생겼습니다. 잠시 후 다시 시도해주세요.');
       setIsSubmitting(false);
       return;
     }
