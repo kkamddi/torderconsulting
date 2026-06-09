@@ -24,6 +24,7 @@ const preferredTimes = ['오전', '오후', '저녁', '아무 때나 가능'];
 export default function ApplyPage() {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const requiredFields = useMemo(
@@ -48,6 +49,7 @@ export default function ApplyPage() {
     const nextValue = name === 'phone' ? String(value).replace(/[^\d-]/g, '') : value;
     setForm((current) => ({ ...current, [name]: nextValue }));
     setErrors((current) => ({ ...current, [name]: '' }));
+    setSubmitError('');
   };
 
   const validate = () => {
@@ -71,9 +73,13 @@ export default function ApplyPage() {
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setSubmitError('');
     try {
       await handleLeadSubmit(form);
       navigate('/complete');
+    } catch (error) {
+      console.error('상담 신청 저장 실패', error);
+      setSubmitError('신청 저장 중 문제가 생겼습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -187,8 +193,9 @@ export default function ApplyPage() {
           </section>
 
           <div className="sticky-submit">
+            {submitError ? <p className="submit-error">{submitError}</p> : null}
             <button className="primary-button" type="submit" disabled={isSubmitting || !isFormReady}>
-              {isSubmitting ? '신청 중입니다' : '상담 신청 완료하기'}
+              {isSubmitting ? '신청 중...' : '상담 신청 완료하기'}
             </button>
             {!isFormReady ? <p>필수 정보를 모두 입력하면 신청할 수 있어요.</p> : null}
           </div>

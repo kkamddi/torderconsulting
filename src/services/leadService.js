@@ -1,3 +1,5 @@
+import { supabase } from '../lib/supabaseClient.js';
+
 export async function handleLeadSubmit(form) {
   const formData = {
     store_name: form.storeName.trim(),
@@ -6,17 +8,21 @@ export async function handleLeadSubmit(form) {
     region: form.region.trim(),
     business_type: form.businessType,
     table_count: Number(form.tableCount),
-    order_method: form.orderMethod,
-    concern: form.concern,
+    current_order_method: form.orderMethod,
+    pain_point: form.concern,
     preferred_time: form.preferredTime,
-    privacy_agreed: form.privacy,
+    status: 'new',
   };
 
-  console.log('상담 신청 정보', formData);
+  if (!supabase) {
+    throw new Error('Supabase 환경변수가 설정되지 않았습니다.');
+  }
 
-  await new Promise((resolve) => {
-    window.setTimeout(resolve, 450);
-  });
+  const { error } = await supabase.from('leads').insert(formData);
+
+  if (error) {
+    throw error;
+  }
 
   return { ok: true, lead: formData };
 }
