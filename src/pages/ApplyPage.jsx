@@ -76,10 +76,19 @@ export default function ApplyPage() {
     setSubmitError('');
     try {
       await handleLeadSubmit(form);
-      navigate('/complete');
     } catch (error) {
       console.error('상담 신청 저장 실패', error);
-      setSubmitError('신청 저장 중 문제가 생겼습니다. 잠시 후 다시 시도해주세요.');
+      const detail = error?.message ? ` (${error.message})` : '';
+      setSubmitError(`신청 저장 중 문제가 생겼습니다.${detail}`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      navigate('/complete');
+    } catch (error) {
+      console.error('신청 완료 페이지 이동 실패', error);
+      window.location.href = '/complete';
     } finally {
       setIsSubmitting(false);
     }

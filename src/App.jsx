@@ -11,7 +11,7 @@ function getPath() {
 
 export function navigate(path) {
   window.history.pushState({}, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate'));
+  window.dispatchEvent(new Event('popstate'));
 }
 
 export default function App() {
